@@ -227,6 +227,25 @@ You'll need to copy the value from the `code=` parameter and paste it back into 
 
 **Important:** The authentication token obtained through this process is valid for only one hour. After this period, you'll need to run the `godeogoker login` command again to refresh your credentials.
 
+## 🧰 How to install
+
+Download the latest installation package
+
+Install on OSX
+
+```bash
+curl -L -o godeogoker https://github.com/rogersilvasouza/godeogoker/releases/download/v1.0.0/godeogoker
+sudo chmod +x godeogoker
+sudo mv godeogoker /usr/local/bin/godeogoker
+```
+
+Check install
+To check godeogoker is properly installed use
+
+```bash
+godeogoker help
+```
+
 ## 🛠️ Usage
 
 Godeogoker offers several command options:
