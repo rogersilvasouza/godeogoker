@@ -130,8 +130,8 @@ The `config.json` file contains all the settings needed for godeogoker to operat
             "channel_id": "",              // YouTube channel ID
             "url": "",                     // YouTube channel URL
             "folder": "",                  // Local folder to store downloads
-            "video_base": "",              // Base template for video processing
-            "video_intro": "",             // Intro clip to add to videos
+            "video_base_vertical": "",     // Base template for video vertical
+            "video_base_horizontal": "",   // Base template for video horizontal
             "video_cover": "",             // Cover image for videos
             "font": "",                    // Font to use for text overlays
             "font_size": "64",             // Font size for text overlays
@@ -141,7 +141,8 @@ The `config.json` file contains all the settings needed for godeogoker to operat
             "topics": "one,two,three",     // Topics to focus on when cutting
             "excerpts": 3,                 // Number of excerpts to generate
             "stretch_time": 1,             // Time factor for stretching clips
-            "video_limit": 15              // Maximum videos to process
+            "video_limit": 15,             // Maximum videos to process
+            "upload_to_youtube": false     // Upload automatically to youtube
         },
         // Add more channel configurations here
     ]
@@ -170,6 +171,9 @@ The `video_limit` parameter controls how many videos will be downloaded from the
 ## 🚀 Performance Considerations
 
 For optimal performance, godeogoker processes videos in 720p resolution by default. This provides a good balance between quality and processing speed.
+
+**Important Processing Note:**
+Videos longer than 20 minutes are automatically split into 20-minute segments to improve processing efficiency and reduce memory usage. These segments are processed individually and then recombined as needed.
 
 **Benchmark Information:**
 - A system with an Intel i5 processor and 8GB RAM typically takes:
@@ -211,6 +215,18 @@ Choose your model based on your budget and quality requirements.
 7. Download the credentials JSON file
 8. Add the client ID and client secret to your `config.json` file
 
+### Authentication Flow
+
+When you run `godeogoker login`, you'll be directed to authenticate with YouTube. After granting permissions, you'll be redirected to a URL like:
+
+```
+http://localhost/?state=state&code=CODEHERE&scope=https://www.googleapis.com/auth/youtube.upload%20https://www.googleapis.com/auth/youtube.readonly
+```
+
+You'll need to copy the value from the `code=` parameter and paste it back into the CLI prompt. Godeogoker will handle the rest of the OAuth flow automatically!
+
+**Important:** The authentication token obtained through this process is valid for only one hour. After this period, you'll need to run the `godeogoker login` command again to refresh your credentials.
+
 ## 🛠️ Usage
 
 Godeogoker offers several command options:
@@ -231,16 +247,6 @@ godeogoker exec {channel_id} --force
 # Process a specific video within a channel
 godeogoker exec {channel_id} -v={youtube_video_id}
 ```
-
-### Authentication Flow
-
-When you run `godeogoker login`, you'll be directed to authenticate with YouTube. After granting permissions, you'll be redirected to a URL like:
-
-```
-http://localhost/?state=state&code=CODEHERE&scope=https://www.googleapis.com/auth/youtube.upload%20https://www.googleapis.com/auth/youtube.readonly
-```
-
-You'll need to copy the value from the `code=` parameter and paste it back into the CLI prompt. Godeogoker will handle the rest of the OAuth flow automatically!
 
 ## 🤝 Contributing
 
