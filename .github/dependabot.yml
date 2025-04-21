@@ -1,0 +1,19 @@
+# Dependabot go
+# https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "go"
+    assignees:
+      - "rogersilvasouza"
+    reviewers:
+      - "rogersilvasouza"
+    versioning-strategy: auto
+    security:
+      updates: true
