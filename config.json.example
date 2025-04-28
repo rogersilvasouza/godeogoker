@@ -25,7 +25,8 @@
             "excerpts": 3,
             "stretch_time": 1,
             "video_limit": 15,
-            "upload_to_youtube": false
+            "upload_to_youtube": false,
+            "ytdlp_format": "bestvideo[height<=720]+bestaudio/best[height<=720]"
         },
     ]
 }

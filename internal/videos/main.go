@@ -232,7 +232,7 @@ func DownloadVideo(channel config.Channel, force bool) {
 				"--geo-bypass",
 				"--no-check-certificate",
 				"--force-generic-extractor",
-				"--format", "bestvideo[height<=720]+bestaudio/best[height<=720]",
+				"--format", channel.YtdlpFormat,
 				"--concurrent-fragments", "8",
 				"-o",
 				videoFileName,

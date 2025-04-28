@@ -125,24 +125,25 @@ The `config.json` file contains all the settings needed for godeogoker to operat
     },
     "channels": [
         {
-            "id": "",                      // Unique identifier for this channel configuration
-            "name": "",                    // Display name for the channel
-            "channel_id": "",              // YouTube channel ID
-            "url": "",                     // YouTube channel URL
-            "folder": "",                  // Local folder to store downloads
-            "video_base_vertical": "",     // Base template for video vertical
-            "video_base_horizontal": "",   // Base template for video horizontal
-            "video_cover": "",             // Cover image for videos
-            "font": "",                    // Font to use for text overlays
-            "font_size": "64",             // Font size for text overlays
-            "font_color": "#FFFFFF",       // Font color for text overlays
-            "font_effect": "...",          // Font effects for text overlays
-            "description": "",             // Default description template
-            "topics": "one,two,three",     // Topics to focus on when cutting
-            "excerpts": 3,                 // Number of excerpts to generate
-            "stretch_time": 1,             // Time factor for stretching clips
-            "video_limit": 15,             // Maximum videos to process
-            "upload_to_youtube": false     // Upload automatically to youtube
+            "id": "",                           // Unique identifier for this channel configuration
+            "name": "",                         // Display name for the channel
+            "channel_id": "",                   // YouTube channel ID
+            "url": "",                          // YouTube channel URL
+            "folder": "",                       // Local folder to store downloads
+            "video_base_vertical": "",          // Base template for video vertical
+            "video_base_horizontal": "",        // Base template for video horizontal
+            "video_cover": "",                  // Cover image for videos
+            "font": "",                         // Font to use for text overlays
+            "font_size": "64",                  // Font size for text overlays
+            "font_color": "#FFFFFF",            // Font color for text overlays
+            "font_effect": "...",               // Font effects for text overlays
+            "description": "",                  // Default description template
+            "topics": "one,two,three",          // Topics to focus on when cutting
+            "excerpts": 3,                      // Number of excerpts to generate
+            "stretch_time": 1,                  // Time factor for stretching clips
+            "video_limit": 15,                  // Maximum videos to process
+            "upload_to_youtube": false,         // Upload automatically to youtube
+            "ytdlp_format": "best[height<=720]" // Format ytdlp to download data (impacts in performance)
         },
         // Add more channel configurations here
     ]

@@ -37,6 +37,7 @@ type Channel struct {
 	FontColor           string `json:"font_color"`            // Font color for text overlays
 	FontEffect          string `json:"font_effect"`           // Special effects to apply to text
 	UploadToYouTube     bool   `json:"upload_to_youtube"`     // Whether to upload processed videos to YouTube
+	YtdlpFormat         string `json:"ytdlp_format"`          // Format string for yt-dlp
 }
 
 // Config represents the main application configuration structure.
