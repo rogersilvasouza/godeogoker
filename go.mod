@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/mowshon/moviego v1.0.1
-	golang.org/x/oauth2 v0.31.0
+	golang.org/x/oauth2 v0.32.0
 	google.golang.org/api v0.252.0
 )
 
