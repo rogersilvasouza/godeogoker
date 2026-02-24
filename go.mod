@@ -1,12 +1,12 @@
 module github.com/rogersilvasouza/godeogoker
 
-go 1.24.1
+go 1.25.0
 
 require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/mowshon/moviego v1.0.1
 	golang.org/x/oauth2 v0.35.0
-	google.golang.org/api v0.267.0
+	google.golang.org/api v0.268.0
 )
 
 require (
