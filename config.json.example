@@ -27,6 +27,6 @@
             "video_limit": 15,
             "upload_to_youtube": false,
             "ytdlp_format": "bestvideo[height<=720]+bestaudio/best[height<=720]"
-        },
+        }
     ]
 }

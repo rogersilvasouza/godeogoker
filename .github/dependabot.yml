@@ -1,12 +1,32 @@
-# Dependabot go
-# https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates
 version: 2
+
 updates:
-  - package-ecosystem: gomod
-    directory: /
+  - package-ecosystem: "gomod"
+    directory: "/"
     schedule:
-      interval: daily
-    open-pull-requests-limit: 3
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    cooldown:
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
+    groups:
+      go-minor-and-patch:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      go-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore(deps)"
     labels:
       - "dependencies"
       - "go"
@@ -14,6 +34,3 @@ updates:
       - "rogersilvasouza"
     reviewers:
       - "rogersilvasouza"
-    versioning-strategy: auto
-    security:
-      updates: true
