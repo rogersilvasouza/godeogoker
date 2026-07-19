@@ -7,7 +7,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
@@ -19,7 +18,6 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/mowshon/moviego"
 	"github.com/rogersilvasouza/godeogoker/internal/auth"
 	"github.com/rogersilvasouza/godeogoker/internal/config"
 	"golang.org/x/oauth2"
@@ -91,7 +89,7 @@ func GetLastVideos(channel config.Channel) []string {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println(errorStyle.Render("Error reading RSS feed: " + err.Error()))
 		log.Fatalf("Error reading RSS feed response: %v", err)
@@ -128,8 +126,27 @@ func GetLastVideos(channel config.Channel) []string {
 }
 
 func extractVideoID(rssID string) string {
-	videoID := rssID[strings.LastIndex(rssID, ":")+1:]
-	return videoID
+	return rssID[strings.LastIndex(rssID, ":")+1:]
+}
+
+func getVideoDuration(videoFileName string) (float64, error) {
+	cmd := exec.Command(
+		config.GetFFprobe(),
+		"-v", "quiet",
+		"-show_entries", "format=duration",
+		"-of", "default=noprint_wrappers=1:nokey=1",
+		videoFileName,
+	)
+	output, err := cmd.Output()
+	if err != nil {
+		return 0, fmt.Errorf("getting video duration: %w", err)
+	}
+
+	duration, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
+	if err != nil {
+		return 0, fmt.Errorf("parsing video duration: %w", err)
+	}
+	return duration, nil
 }
 
 func splitLongVideo(videoFileName string, subtitleFileName string) ([]string, []string, error) {
@@ -137,16 +154,9 @@ func splitLongVideo(videoFileName string, subtitleFileName string) ([]string, []
 	var videoSegments []string
 	var subtitleSegments []string
 
-	ffprobePath := config.GetFFprobe()
-	cmd := exec.Command(ffprobePath, "-v", "quiet", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", videoFileName)
-	output, err := cmd.Output()
+	duration, err := getVideoDuration(videoFileName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error getting video duration: %v", err)
-	}
-
-	duration, err := strconv.ParseFloat(strings.TrimSpace(string(output)), 64)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error converting video duration: %v", err)
+		return nil, nil, err
 	}
 
 	if duration <= float64(segmentDuration) {
@@ -161,7 +171,7 @@ func splitLongVideo(videoFileName string, subtitleFileName string) ([]string, []
 		segmentVideoFile := fmt.Sprintf("%s.part%d.mp4", videoFileName[:len(videoFileName)-4], i+1)
 		segmentSubtitleFile := fmt.Sprintf("%s.part%d.srt", subtitleFileName[:len(subtitleFileName)-4], i+1)
 
-		cmd = exec.Command(ffmpegPath,
+		cmd := exec.Command(ffmpegPath,
 			"-i", videoFileName,
 			"-ss", fmt.Sprintf("%d", startTime),
 			"-t", fmt.Sprintf("%d", segmentDuration),
@@ -175,7 +185,7 @@ func splitLongVideo(videoFileName string, subtitleFileName string) ([]string, []
 
 		if subtitleEntries, err := parseVTTFile(subtitleFileName + ".pt.vtt"); err == nil {
 			subtitleText := getSubtitlesForTimeRange(subtitleEntries, startTime, startTime+segmentDuration)
-			if err := ioutil.WriteFile(segmentSubtitleFile, []byte(subtitleText), 0644); err != nil {
+			if err := os.WriteFile(segmentSubtitleFile, []byte(subtitleText), 0644); err != nil {
 				log.Printf("Error creating subtitle file for segment %d: %v", i+1, err)
 			} else {
 				subtitleSegments = append(subtitleSegments, segmentSubtitleFile)
@@ -284,13 +294,11 @@ func DownloadVideo(channel config.Channel, force bool) {
 			if len(cuts) > 0 {
 				fmt.Println(successStyle.Render(fmt.Sprintf("Found %d interesting cuts", len(cuts))))
 
-				video, err := moviego.Load(segmentVideoFile)
+				videoDuration, err := getVideoDuration(segmentVideoFile)
 				if err != nil {
-					fmt.Println(errorStyle.Render("Error loading video segment: " + err.Error()))
+					fmt.Println(errorStyle.Render("Error reading video segment: " + err.Error()))
 					continue
 				}
-
-				videoDuration := video.Duration()
 
 				for j, cut := range cuts {
 					fmt.Println(optionStyle.Render(fmt.Sprintf("Processing cut %d/%d: %s", j+1, len(cuts), cut.Title)))
@@ -304,7 +312,16 @@ func DownloadVideo(channel config.Channel, force bool) {
 					}
 
 					fmt.Println(descriptionStyle.Render(fmt.Sprintf("Creating clip from %d to %d seconds", cut.Begin, cut.End)))
-					if err := video.SubClip(float64(cut.Begin), float64(cut.End)).Output(tempOutputFileName).Run(); err != nil {
+					cmd := exec.Command(
+						config.GetFFmpeg(),
+						"-ss", strconv.Itoa(cut.Begin),
+						"-i", segmentVideoFile,
+						"-t", strconv.Itoa(cut.End-cut.Begin),
+						"-c", "copy",
+						"-y",
+						tempOutputFileName,
+					)
+					if err := cmd.Run(); err != nil {
 						fmt.Println(errorStyle.Render("Error creating clip: " + err.Error()))
 						continue
 					}
@@ -319,7 +336,7 @@ func DownloadVideo(channel config.Channel, force bool) {
 					cutSubtitleFileName := fmt.Sprintf("%s/temp_%s.srt", outputDir, cut.Title)
 					subtitleText := getSubtitlesForTimeRange(subtitleEntries, cut.Begin, cut.End)
 
-					if err := ioutil.WriteFile(cutSubtitleFileName, []byte(subtitleText), 0644); err != nil {
+					if err := os.WriteFile(cutSubtitleFileName, []byte(subtitleText), 0644); err != nil {
 						fmt.Println(errorStyle.Render("Error writing subtitle file: " + err.Error()))
 						os.Rename(tempOutputFileName, outputFileName)
 						continue
@@ -341,7 +358,7 @@ func DownloadVideo(channel config.Channel, force bool) {
 					if err == nil && metadata != nil {
 						metadataFile := fmt.Sprintf("%s/horizontal/%s.json", outputDir, cut.Title)
 						metadataJSON, _ := json.MarshalIndent(metadata, "", "  ")
-						ioutil.WriteFile(metadataFile, metadataJSON, 0644)
+						_ = os.WriteFile(metadataFile, metadataJSON, 0644)
 						fmt.Println(successStyle.Render("Metadata generated successfully"))
 					} else {
 						fmt.Println(errorStyle.Render(fmt.Sprintf("Error generating metadata: %v", err)))
@@ -349,7 +366,7 @@ func DownloadVideo(channel config.Channel, force bool) {
 
 					fmt.Println(commandStyle.Render("Adding subtitles to video..."))
 					ffmpegPath := config.GetFFmpeg()
-					cmd := exec.Command(
+					cmd = exec.Command(
 						ffmpegPath,
 						"-i", tempOutputFileName,
 						"-vf", "subtitles="+cutSubtitleFileName+":force_style='FontSize=22,Alignment=2'",
@@ -578,7 +595,7 @@ func GetCuts(subtleFileName string, topics string, excerpts int, stretchTime int
 		vttPath = subtleFileName + ".pt.vtt"
 	}
 
-	subtleContent, err := ioutil.ReadFile(vttPath)
+	subtleContent, err := os.ReadFile(vttPath)
 	if err != nil {
 		log.Printf("Error reading subtitle file: %v", err)
 		return nil
@@ -704,7 +721,7 @@ type SubtitleEntry struct {
 }
 
 func parseVTTFile(filePath string) ([]SubtitleEntry, error) {
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
