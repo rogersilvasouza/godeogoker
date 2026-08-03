@@ -5,7 +5,7 @@ go 1.25.8
 require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	golang.org/x/oauth2 v0.36.0
-	google.golang.org/api v0.289.0
+	google.golang.org/api v0.290.0
 )
 
 require (
@@ -25,7 +25,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.18 // indirect
 	github.com/googleapis/gax-go/v2 v2.23.0 // indirect
-	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
